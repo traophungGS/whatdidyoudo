@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What did you do exactly…</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #e9eef3;
+  --surface: #f7f9fb;
+  --ink: #14263a;
+  --muted: #5a6b7d;
+  --accent: #0f6f6a;
+  --accent-ink: #ffffff;
+  --line: #b9c5d1;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1a26;
+    --surface: #172536;
+    --ink: #e6edf4;
+    --muted: #93a5b8;
+    --accent: #4fd1c5;
+    --accent-ink: #08201e;
+    --line: #2d4157;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1a26; --surface: #172536; --ink: #e6edf4; --muted: #93a5b8;
+  --accent: #4fd1c5; --accent-ink: #08201e; --line: #2d4157; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0; min-height: 100%;
+  background: var(--bg); color: var(--ink);
+  font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+main { width: 100%; max-width: 640px; }
+.q { margin: 0 0 28px; font-size: clamp(1.25rem, 4.5vw, 1.6rem); font-weight: 400; line-height: 1.25; color: var(--muted); }
+.q .amount {
+  display: block; margin: 4px 0;
+  font-size: clamp(3rem, 15vw, 6.5rem); font-weight: 800; line-height: 1;
+  letter-spacing: -0.03em; color: var(--ink);
+}
+.q .amount span { color: var(--accent); }
+label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 0.95rem; }
+textarea {
+  width: 100%; min-height: 150px; resize: vertical; padding: 14px 16px;
+  font: inherit; font-size: 1.05rem; line-height: 1.5;
+  background: var(--surface); color: var(--ink);
+  border: 2px solid var(--line); border-radius: 10px;
+}
+textarea::placeholder { color: var(--muted); }
+textarea:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }
+.count { color: var(--muted); font-size: 0.9rem; }
+button {
+  font: inherit; font-weight: 700; font-size: 1.05rem;
+  padding: 12px 28px; border: 0; border-radius: 999px; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink);
+}
+button:active { transform: translateY(1px); }
+.q.swap .amount { animation: pop .25s ease-out; }
+@keyframes pop { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .q.swap .amount { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1 class="q" id="question" aria-live="polite"></h1>
+  <label for="answer">Your answer</label>
+  <textarea id="answer" placeholder="Type what you were doing…"></textarea>
+  <div class="row">
+    <span class="count" id="count">Question 1</span>
+    <button id="next" type="button">Next</button>
+  </div>
+</main>
+<script>
+(function () {
+  // Ranges cover 1 second up to 1 month.
+  var units = [
+    { name: "second", max: 59 },
+    { name: "minute", max: 59 },
+    { name: "hour", max: 23 },
+    { name: "day", max: 29 },
+    { name: "week", max: 3 },
+    { name: "month", max: 1 }
+  ];
+  var q = document.getElementById("question");
+  var box = document.getElementById("answer");
+  var count = document.getElementById("count");
+  var n = 0, last = "";
+
+  function pick() {
+    var u, v, key;
+    do {
+      u = units[Math.floor(Math.random() * units.length)];
+      v = 1 + Math.floor(Math.random() * u.max);
+      key = v + " " + u.name;
+    } while (key === last);
+    last = key;
+    return { v: v, unit: u.name + (v === 1 ? "" : "s") };
+  }
+
+  function show() {
+    var p = pick();
+    n += 1;
+    q.classList.remove("swap");
+    void q.offsetWidth;
+    q.innerHTML = 'What did you do exactly <span class="amount">' + p.v + " <span>" + p.unit + "</span></span> ago?";
+    q.classList.add("swap");
+    count.textContent = "Question " + n;
+    box.value = "";
+    box.focus();
+  }
+
+  document.getElementById("next").addEventListener("click", show);
+  show();
+  box.blur();
+})();
+</script>
+</body>
+</html>
